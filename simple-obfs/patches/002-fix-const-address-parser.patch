@@ -1,0 +1,28 @@
+Subject: [PATCH] Preserve const when scanning addresses and hostnames
+
+parse_addr() and validate_hostname() only read their inputs. Keep the
+strchr() results const-qualified so the code builds with glibc headers
+that preserve the input qualifier.
+
+--- a/src/jconf.c
++++ b/src/jconf.c
+@@ -65,7 +65,7 @@ void
+ parse_addr(const char *str, ss_addr_t *addr)
+ {
+     int ipv6 = 0, ret = -1, n = 0;
+-    char *pch;
++    const char *pch;
+ 
+     struct cork_ip ip;
+     if (cork_ip_init(&ip, str) != -1) {
+--- a/src/netutils.c
++++ b/src/netutils.c
+@@ -286,7 +286,7 @@ validate_hostname(const char *hostname, const int hostname_len)
+     const char *label = hostname;
+     while (label < hostname + hostname_len) {
+         size_t label_len = hostname_len - (label - hostname);
+-        char *next_dot   = strchr(label, '.');
++        const char *next_dot = strchr(label, '.');
+         if (next_dot != NULL)
+             label_len = next_dot - label;
+ 
